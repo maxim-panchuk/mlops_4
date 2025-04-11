@@ -1,4 +1,26 @@
 services:
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2180:2180"
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    ports:
+      - "9091:9091"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://:9091
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9091
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
   app:
     build: 
       context: .
@@ -7,15 +29,27 @@ services:
     container_name: app
     ports:
       - "8081:8081"
+    depends_on:
+      - kafka
+      - vault
+      - mongodb
+      - consumer
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    image: yourorg/kafka-consumer:latest
+    depends_on:
+      - kafka
+      - mongodb
     environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN}
       - DB_NAME=${DB_NAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_USERNAME=${DB_USERNAME}
-    depends_on:
-      - vault
-      - mongodb
 
   vault:
     image: hashicorp/vault:latest
