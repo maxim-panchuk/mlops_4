@@ -1,0 +1,8 @@
+.idea
+logs
+src/__pycache__
+tests/__pycache__
+src/database/__pycache__
+.coverage
+.pytest_cache
+venv

@@ -1,0 +1,55 @@
+name: cd
+
+on:
+  repository_dispatch:
+    types: [cd-trigger]
+
+env:
+  DOCKER_IMAGE: panchesco13/banknote-classifier
+  TAG: ${{ github.event.client_payload.sha || github.sha }}
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull container
+        run: |
+          docker pull ${{ env.DOCKER_IMAGE }}:${{ env.TAG }}
+
+      - name: Start containers
+        run: |
+            docker compose up -d
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+
+      - name: Wait for services
+        run: |
+          sleep 30  # Wait for services to start
+      
+      - name: Show app logs
+        run: |
+          docker compose logs app
+
+      - name: Run functional tests
+        run: |
+          pip install -r requirements.txt
+          python -m pytest tests/test_functional.py -v
+
+      - name: Cleanup
+        run: |
+          docker compose down
+          docker system prune -f

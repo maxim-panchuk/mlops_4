@@ -1,0 +1,43 @@
+{
+    "test_cases": [
+        {
+            "name": "Authentic banknote",
+            "input": {
+                "variance": 3.6216,
+                "skewness": 8.6661,
+                "curtosis": -2.8073,
+                "entropy": -0.44699
+            },
+            "expected": {
+                "prediction": 0,
+                "probability": 0.95
+            }
+        },
+        {
+            "name": "Counterfeit banknote",
+            "input": {
+                "variance": -2.5419,
+                "skewness": -0.65804,
+                "curtosis": 2.6842,
+                "entropy": 1.1952
+            },
+            "expected": {
+                "prediction": 1,
+                "probability": 0.92
+            }
+        },
+        {
+            "name": "Edge case",
+            "input": {
+                "variance": 0.0,
+                "skewness": 0.0,
+                "curtosis": 0.0,
+                "entropy": 0.0
+            },
+            "expected": {
+                "prediction": 1,
+                "probability": 0.99
+            }
+        }
+    ]
+} 
