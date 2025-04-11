@@ -1,28 +1,49 @@
-services:
+version: "3.8"
 
+services:
+  # === ZooKeeper ===
   zookeeper:
     image: bitnami/zookeeper:latest
     container_name: zookeeper
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+      # Перенастраиваем порт на 2180
+      - ZOO_CLIENT_PORT_NUMBER=2180
     ports:
       - "2180:2180"
 
+  # === Kafka (классический режим, без KRaft) ===
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
     ports:
       - "9091:9091"
     environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_LISTENERS=PLAINTEXT://:9091
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9091
+      # Отключаем KRaft и явно указываем режим broker
+      - KAFKA_ENABLE_KRAFT=no
+      - KAFKA_CFG_PROCESS_ROLES=broker
+      - KAFKA_CFG_NODE_ID=1
+      
+      # Брокер ID
+      - KAFKA_CFG_BROKER_ID=1
+
+      # Подключаемся к ZooKeeper на 2180
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2180
+
+      # Настраиваем слушатели
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9091
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9091
+      # Без этого переменная может быть "unbound"
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
+
+      # Разрешаем PLAINTEXT для локальной разработки (небезопасно для продакшена)
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
       - zookeeper
+
+  # === Основное приложение (FastAPI) ===
   app:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     image: "${DOCKER_IMAGE:-panchesco13/banknote-classifier}:${TAG:-latest}"
@@ -35,22 +56,28 @@ services:
       - mongodb
       - consumer
 
+  # === Kafka Consumer ===
   consumer:
     build:
       context: .
       dockerfile: Dockerfile.consumer
     image: yourorg/kafka-consumer:latest
+    container_name: consumer
     depends_on:
       - kafka
       - mongodb
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      # Consumer ищет брокер на "kafka:9091"
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9091
+
+      # Vault и другие переменные
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN}
       - DB_NAME=${DB_NAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_USERNAME=${DB_USERNAME}
 
+  # === Vault ===
   vault:
     image: hashicorp/vault:latest
     container_name: vault
@@ -63,6 +90,7 @@ services:
       - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
     command: server -dev
 
+  # === MongoDB ===
   mongodb:
     image: mongo:latest
     container_name: mongodb
