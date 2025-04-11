@@ -34,7 +34,6 @@ jobs:
       - name: Trigger CD pipeline
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.PAT }}
           repository: maxim-panchuk/mlops_3
           event-type: cd-trigger
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
