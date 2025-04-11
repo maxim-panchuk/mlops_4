@@ -47,7 +47,7 @@ jobs:
       - name: Run functional tests
         run: |
           pip install -r requirements.txt
-          python -m pytest tests/test_functional.py -v
+          python tests/test_functional.py
 
       - name: Cleanup
         run: |
