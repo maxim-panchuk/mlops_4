@@ -6,3 +6,4 @@ src/database/__pycache__
 .coverage
 .pytest_cache
 venv
+.vscode/
