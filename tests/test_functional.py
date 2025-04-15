@@ -3,7 +3,7 @@ import requests
 from pathlib import Path
 
 def load_scenarios():
-    """Load test scenarios from JSON file"""
+    """Load test scenrios from JSON file"""
     scenarios_path = Path(__file__).parent / "scenarios.json"
     with open(scenarios_path) as f:
         return json.load(f)
