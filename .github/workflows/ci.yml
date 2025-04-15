@@ -35,6 +35,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PAT }}
-          repository: maxim-panchuk/mlops_3
+          repository: maxim-panchuk/mlops_4
           event-type: cd-trigger
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

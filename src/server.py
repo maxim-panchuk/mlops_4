@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from src.config import Config
 from src.logger import Logger
-from src.database.mongodb import MongoDB
+from src.kafka_manager import KafkaManager
 
 class InputData(BaseModel):
     variance: float
@@ -24,7 +24,8 @@ class APIServer:
         )
         self.model = self._load_model()
         self.app = self._create_app()
-        self.db = MongoDB()
+        self.kafka_manager = KafkaManager()
+        self.logger.info("API SERVER initialized!")
 
     def _load_model(self):
         model_path = self.config.get_train_config()['model_path']
@@ -63,7 +64,11 @@ class APIServer:
                     "probability": float(np.max(prediction_proba[0]))
                 }
 
-                self.db.save_model_result('banknote_predictions', int(prediction[0]))
+
+                self.kafka_manager.send_message(
+                    topic="banknote_predictions",
+                    message=result
+                )
                 
                 self.logger.info(f"Prediction made: {result}")
                 return result
