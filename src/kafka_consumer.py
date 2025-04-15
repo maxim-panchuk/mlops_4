@@ -5,9 +5,14 @@ from src.database.mongodb import MongoDB
 
 class Consumer:
     def __init__(self):
+        bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+        if bootstrap_servers is None:
+            raise Exception("no KAFKA_BOOTSTRAP_SERVERS sepicified!")
+        print(f"KAFKA_BOOTSTRAP_SERVERS: {bootstrap_servers}")
+
         self.consumer = KafkaConsumer(
             "banknote_predictions",
-            bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9091"),
+            bootstrap_servers=bootstrap_servers,
             value_deserializer=lambda v: json.loads(v.decode('utf-8')),
             auto_offset_reset='earliest',
             enable_auto_commit=True
