@@ -25,6 +25,7 @@ class APIServer:
         self.model = self._load_model()
         self.app = self._create_app()
         self.kafka_manager = KafkaManager()
+        self.logger.info("API SERVER initialized!")
 
     def _load_model(self):
         model_path = self.config.get_train_config()['model_path']
