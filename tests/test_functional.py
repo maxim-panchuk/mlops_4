@@ -11,7 +11,7 @@ def load_scenarios():
 def test_api_functionality():
     """Test API functionality against scenarios"""
     scenarios = load_scenarios()
-    api_url = "http://0.0.0.0:8081/predict"
+    api_url = "http://localhost:8081/predict"
     
     for case in scenarios["test_cases"]:
         print(f"\nTesting scenario: {case['name']}")
