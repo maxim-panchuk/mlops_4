@@ -24,7 +24,7 @@ class Consumer:
         for message in self.consumer:
             print(f'Message received: {message.value}', flush=True)
             record = message.value
-            self.db.save_model_result("banknote_predictions", int(record[0]))
+            self.db.save_model_result("banknote_predictions", int(record['prediction']))
 
 if __name__ == "__main__":
     Consumer().start_listener()
