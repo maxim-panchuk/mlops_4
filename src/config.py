@@ -36,10 +36,20 @@ class Config:
             "log_file": self.config.get("logging", "log_file")
         }
     
+    def get_kafka_config(self) -> Dict[str, Any]:
+        """Kafka config"""
+        return {
+            "bootstrap_servers": self.config.get("kafka", "bootstrap_servers", fallback="kafka:9092"),
+            "topic": self.config.get("kafka", "topic", fallback="banknote_predictions"),
+            "num_partitions": self.config.getint("kafka", "num_partitions", fallback=1),
+            "replication_factor": self.config.getint("kafka", "replication_factor", fallback=1)
+        }
+    
     def get_all_config(self) -> Dict[str, Dict[str, Any]]:
         """All config"""
         return {
             "preprocess": self.get_preprocess_config(),
             "train": self.get_train_config(),
-            "logging": self.get_logging_config()
+            "logging": self.get_logging_config(),
+            "kafka": self.get_kafka_config()
         } 

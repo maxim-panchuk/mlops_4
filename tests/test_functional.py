@@ -3,19 +3,21 @@ import requests
 from pathlib import Path
 
 def load_scenarios():
-    """Load test scenarios from JSON file"""
+    """Load test scenrios from JSON file"""
     scenarios_path = Path(__file__).parent / "scenarios.json"
     with open(scenarios_path) as f:
         return json.load(f)
 
 def test_api_functionality():
+    s = requests.Session()
+    s.trust_env = False
     """Test API functionality against scenarios"""
     scenarios = load_scenarios()
     api_url = "http://localhost:8081/predict"
     
     for case in scenarios["test_cases"]:
         print(f"\nTesting scenario: {case['name']}")
-        response = requests.post(api_url, json=case["input"])
+        response = s.post(api_url, json=case["input"])
         
         assert response.status_code == 200, f"API return status code {response.status_code}"
         

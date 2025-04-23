@@ -11,4 +11,4 @@ if __name__ == "__main__":
     print("\nClassification Report:")
     for key, value in results.items():
         if key != 'accuracy':
-            print(f"{key}: {value}")
+            print(f"{key}: {value}") 
