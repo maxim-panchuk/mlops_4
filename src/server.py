@@ -24,7 +24,7 @@ class APIServer:
         )
         self.model = self._load_model()
         self.app = self._create_app()
-        self.kafka_manager = KafkaManager()
+        self.kafka_manager = KafkaManager(config_path)
         self.logger.info("API SERVER initialized!")
 
     def _load_model(self):
@@ -64,11 +64,7 @@ class APIServer:
                     "probability": float(np.max(prediction_proba[0]))
                 }
 
-
-                self.kafka_manager.send_message(
-                    topic="banknote_predictions",
-                    message=result
-                )
+                self.kafka_manager.send_message(message=result)
                 
                 self.logger.info(f"Prediction made: {result}")
                 return result
